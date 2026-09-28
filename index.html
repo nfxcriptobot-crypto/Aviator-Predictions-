@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#080609">
+<title>NFX CrashLab</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
+
+html,body{
+    width:100%;
+    min-height:100%;
+}
+
+body{
+    min-height:100vh;
+    background:
+        radial-gradient(circle at 50% 12%,#351017 0%,#12070a 38%,#050507 82%);
+    color:#fff;
+    font-family:Arial,Helvetica,sans-serif;
+    display:flex;
+    justify-content:center;
+    overflow-x:hidden;
+}
+
+button{
+    font-family:inherit;
+}
+
+.app{
+    width:100%;
+    max-width:430px;
+    min-height:100vh;
+    position:relative;
+    overflow:hidden;
+}
+
+/* =========================
+   SPLASH / LOADING
+========================= */
+
+.loading-screen{
+    min-height:100vh;
+    min-height:100dvh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    padding:30px;
+    position:relative;
+}
+
+.splash-logo{
+    width:180px;
+    height:180px;
+    border-radius:50%;
+    overflow:hidden;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin-bottom:24px;
+    box-shadow:
+        0 0 28px rgba(255,25,55,.38),
+        0 0 70px rgba(255,25,55,.16);
+}
+
+.splash-logo img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+}
+
+.loading-title{
+    font-size:25px;
+    font-weight:900;
+    letter-spacing:.3px;
+}
+
+.demo-label{
+    margin-top:8px;
+    color:#ff5368;
+    font-size:10px;
+    letter-spacing:2px;
+    font-weight:800;
+}
+
+.status{
+    margin-top:52px;
+    width:100%;
+    text-align:center;
+}
+
+.status-text{
+    min-height:25px;
+    font-size:15px;
+    color:#ddd;
+    margin-bottom:17px;
+}
+
+.progress-box{
+    width:100%;
+    height:7px;
+    background:#25171a;
+    border-radius:20px;
+    overflow:hidden;
+    border:1px solid #402126;
+}
+
+.progress{
+    width:0%;
+    height:100%;
+    background:linear-gradient(90deg,#ff173b,#ff6a79);
+    box-shadow:0 0 15px #ff2848;
+    border-radius:20px;
+    transition:width .45s ease;
+}
+
+.percent{
+    margin-top:12px;
+    font-size:12px;
+    color:#777;
+}
+
+/* =========================
+   SIGNAL PAGE
+========================= */
+
+.signal-screen{
+    display:none;
+    min-height:100vh;
+    min-height:100dvh;
+    padding:24px 18px 28px;
+    animation:screenIn .45s ease;
+}
+
+@keyframes screenIn{
+    from{
+        opacity:0;
+        transform:translateY(10px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+.topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.brand-icon{
+    width:42px;
+    height:42px;
+    border-radius:13px;
+    overflow:hidden;
+    background:#16090c;
+    box-shadow:0 0 15px rgba(255,30,60,.2);
+}
+
+.brand-icon img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+.brand-text{
+    font-size:18px;
+    font-weight:900;
+}
+
+.online{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    color:#5dff9a;
+    font-size:10px;
+    font-weight:800;
+}
+
+.online-dot{
+    width:7px;
+    height:7px;
+    border-radius:50%;
+    background:#35ff86;
+    box-shadow:0 0 10px #35ff86;
+}
+
+.connection{
+    margin-top:25px;
+    background:rgba(255,255,255,.035);
+    border:1px solid rgba(255,255,255,.08);
+    padding:13px 15px;
+    border-radius:14px;
+    display:flex;
+    justify-content:space-between;
+    font-size:12px;
+}
+
+.connection span:last-child{
+    color:#59ff9a;
+    font-weight:700;
+}
+
+/* SIGNAL CARD */
+
+.signal-card{
+    margin-top:18px;
+    background:
+        radial-gradient(circle at 50% 25%,rgba(255,35,60,.15),transparent 55%),
+        linear-gradient(145deg,#1b0d10,#0c090a);
+    border:1px solid #432026;
+    border-radius:25px;
+    padding:28px 20px;
+    text-align:center;
+    box-shadow:0 15px 45px rgba(0,0,0,.35);
+}
+
+.card-title{
+    color:#888;
+    font-size:11px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+}
+
+.multiplier{
+    font-size:62px;
+    line-height:1;
+    font-weight:900;
+    margin:20px 0 9px;
+    text-shadow:0 0 25px rgba(255,40,70,.45);
+    transition:transform .2s ease;
+}
+
+.multiplier.pop{
+    animation:pop .4s ease;
+}
+
+@keyframes pop{
+    0%{transform:scale(.88);opacity:.45}
+    65%{transform:scale(1.06)}
+    100%{transform:scale(1);opacity:1}
+}
+
+.x{
+    color:#ff4059;
+}
+
+.signal-level{
+    display:inline-block;
+    padding:7px 18px;
+    border-radius:30px;
+    background:#301117;
+    color:#ff6072;
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:1.5px;
+}
+
+.analyzing{
+    height:20px;
+    margin-top:17px;
+    color:#777;
+    font-size:11px;
+}
+
+.generate{
+    width:100%;
+    border:none;
+    margin-top:24px;
+    padding:17px;
+    border-radius:15px;
+    background:linear-gradient(135deg,#ff173d,#bd0b26);
+    color:#fff;
+    font-size:15px;
+    font-weight:800;
+    cursor:pointer;
+    box-shadow:0 8px 25px rgba(255,24,55,.25);
+    transition:transform .15s ease,opacity .2s ease;
+}
+
+.generate:active{
+    transform:scale(.98);
+}
+
+.generate:disabled{
+    opacity:.62;
+    cursor:wait;
+}
+
+/* STATS */
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+    margin-top:15px;
+}
+
+.stat{
+    background:#110d0e;
+    border:1px solid #27191c;
+    border-radius:14px;
+    padding:13px 5px;
+    text-align:center;
+}
+
+.stat strong{
+    display:block;
+    font-size:17px;
+}
+
+.stat small{
+    color:#666;
+    font-size:9px;
+    text-transform:uppercase;
+}
+
+/* HISTORY */
+
+.history{
+    margin-top:20px;
+}
+
+.history-title{
+    font-size:13px;
+    color:#aaa;
+    margin-bottom:10px;
+}
+
+.history-list{
+    display:flex;
+    gap:8px;
+    overflow:hidden;
+}
+
+.history-item{
+    min-width:76px;
+    padding:11px 5px;
+    text-align:center;
+    background:#110d0e;
+    border:1px solid #26181b;
+    border-radius:12px;
+}
+
+.history-item strong{
+    font-size:13px;
+}
+
+.history-item small{
+    display:block;
+    color:#666;
+    font-size:8px;
+    margin-top:4px;
+}
+
+.footer{
+    text-align:center;
+    margin-top:25px;
+    color:#4d4d4d;
+    font-size:9px;
+    line-height:1.6;
+}
+
+@media(max-width:350px){
+    .splash-logo{
+        width:150px;
+        height:150px;
+    }
+
+    .multiplier{
+        font-size:54px;
+    }
+
+    .signal-screen{
+        padding-left:14px;
+        padding-right:14px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- =========================
+         SPLASH SCREEN
+    ========================== -->
+
+    <section class="loading-screen" id="loadingScreen">
+
+        <!-- Put the supplied logo image in the same folder as index.html -->
+        <div class="splash-logo">
+            <img src="logo.png" alt="NFX CrashLab">
+        </div>
+
+        <div class="loading-title">
+            NFX CrashLab
+        </div>
+
+        <div class="demo-label">
+            Avitor SIGNAL GENERATOR
+        </div>
+
+        <div class="status">
+
+            <div class="status-text" id="statusText">
+                Initializing...
+            </div>
+
+            <div class="progress-box">
+                <div class="progress" id="progress"></div>
+            </div>
+
+            <div class="percent" id="percent">
+                0%
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         SIGNAL SCREEN
+    ========================== -->
+
+    <section class="signal-screen" id="signalScreen">
+
+        <div class="topbar">
+
+            <div class="brand">
+
+                <div class="brand-icon">
+                    <img src="logo.png" alt="NFX">
+                </div>
+
+                <div class="brand-text">
+                    NFX CrashLab
+                </div>
+
+            </div>
+
+            <div class="online">
+                <span class="online-dot"></span>
+                2777bet CONNECTED
+            </div>
+
+        </div>
+
+
+        <div class="connection">
+            <span>Connected Site</span>
+            <span>2777bet</span>
+        </div>
+
+
+        <div class="signal-card">
+
+            <div class="card-title">
+                Next Prediction
+            </div>
+
+            <div class="multiplier" id="multiplier">
+                1.84<span class="x">x</span>
+            </div>
+
+            <div class="signal-level" id="signalLevel">
+                LOW / MEDIUM
+            </div>
+
+            <div class="analyzing" id="analyzing">
+     Aviator analysis ready
+            </div>
+
+            <button class="generate" id="generate">
+                GENERATE SIGNAL
+            </button>
+
+        </div>
+
+
+        <div class="stats">
+
+            <div class="stat">
+                <strong id="total">0</strong>
+                <small>Prediction</small>
+            </div>
+
+            <div class="stat">
+                <strong id="high">0</strong>
+                <small>5x+</small>
+            </div>
+
+            <div class="stat">
+                <strong id="medium">0</strong>
+                <small>2x+</small>
+            </div>
+
+        </div>
+
+
+        <div class="history">
+
+            <div class="history-title">
+                Recent Prediction 
+            </div>
+
+            <div class="history-list" id="historyList">
+
+                <div class="history-item">
+                    <strong>1.84x</strong>
+                </div>
+
+               <div class="history-item">
+                    <strong>2.37x</strong>
+                </div>
+
+               <div class="history-item">
+                    <strong>1.21x</strong>
+                </div>
+
+            <div>
+
+        </div>
+
+
+        <div class="footer">
+            Aviator Prediction From Meshine Learning System <br>
+            This application try to predict real betting results.
+        </div>
+
+    </section>
+
+</div>
+
+
+<script>
+
+/* =====================================================
+   LOADING FLOW
+===================================================== */
+
+const loadingScreen =
+    document.getElementById("loadingScreen");
+
+const signalScreen =
+    document.getElementById("signalScreen");
+
+const progress =
+    document.getElementById("progress");
+
+const percent =
+    document.getElementById("percent");
+
+const statusText =
+    document.getElementById("statusText");
+
+
+const loadingSteps = [
+
+    {
+        text:"Finding betting site...",
+        progress:20
+    },
+
+    {
+        text:"Betting site found",
+        progress:43
+    },
+
+    {
+        text:"2777 Bet",
+        progress:65
+    },
+
+    {
+        text:"Connecting with Aviator...",
+        progress:87
+    },
+
+    {
+        text:"Connection established",
+        progress:100
+    }
+
+];
+
+
+let loadingStep = 0;
+
+
+function runLoading(){
+
+    if(loadingStep < loadingSteps.length){
+
+        const current =
+            loadingSteps[loadingStep];
+
+        statusText.textContent =
+            current.text;
+
+        progress.style.width =
+            current.progress + "%";
+
+        percent.textContent =
+            current.progress + "%";
+
+        loadingStep++;
+
+        setTimeout(runLoading,1150);
+
+    }else{
+
+        setTimeout(()=>{
+
+            loadingScreen.style.display =
+                "none";
+
+            signalScreen.style.display =
+                "block";
+
+        },700);
+
+    }
+}
+
+
+setTimeout(runLoading,700);
+
+
+/* =====================================================
+   DEMO MULTIPLIER GENERATOR
+===================================================== */
+
+/*
+   Demo-only random distribution.
+
+   Smaller multipliers are common.
+   Larger multipliers become increasingly rare.
+
+   This does NOT connect to or predict any real
+   Aviator/betting round.
+*/
+
+function generateDemoMultiplier(){
+
+    const r = Math.random();
+
+    let value;
+
+
+    // 60% : 1.00x - 1.99x
+    if(r < 0.60){
+
+        value =
+            1.00 +
+            Math.random() * 0.99;
+
+    }
+
+    // 25% : 2.00x - 3.99x
+    else if(r < 0.85){
+
+        value =
+            2.00 +
+            Math.random() * 1.99;
+
+    }
+
+    // 9% : 4.00x - 7.99x
+    else if(r < 0.94){
+
+        value =
+            4.00 +
+            Math.random() * 3.99;
+
+    }
+
+    // 4% : 8.00x - 19.99x
+    else if(r < 0.98){
+
+        value =
+            8.00 +
+            Math.random() * 11.99;
+
+    }
+
+    // 1.5% : 20.00x - 49.99x
+    else if(r < 0.995){
+
+        value =
+            20.00 +
+            Math.random() * 29.99;
+
+    }
+
+    // 0.5% : 50.00x - 150.00x
+    else{
+
+        value =
+            50.00 +
+            Math.random() * 100;
+
+    }
+
+
+    return Number(value.toFixed(2));
+}
+
+
+/* =====================================================
+   SIGNAL UI
+===================================================== */
+
+const multiplier =
+    document.getElementById("multiplier");
+
+const signalLevel =
+    document.getElementById("signalLevel");
+
+const analyzing =
+    document.getElementById("analyzing");
+
+const generate =
+    document.getElementById("generate");
+
+const total =
+    document.getElementById("total");
+
+const high =
+    document.getElementById("high");
+
+const medium =
+    document.getElementById("medium");
+
+const historyList =
+    document.getElementById("historyList");
+
+
+let signalCount = 0;
+let highCount = 0;
+let mediumCount = 0;
+
+
+/* =====================================================
+   SIGNAL LEVEL
+===================================================== */
+
+function getSignalLevel(value){
+
+    if(value < 1.50){
+        return "LOW";
+    }
+
+    if(value < 2.00){
+        return "LOW / MEDIUM";
+    }
+
+    if(value < 5.00){
+        return "MEDIUM";
+    }
+
+    if(value < 10.00){
+        return "HIGH";
+    }
+
+    return "VERY HIGH";
+}
+
+
+/* =====================================================
+   GENERATE
+===================================================== */
+
+function generateSignal(){
+
+    generate.disabled = true;
+
+    signalLevel.textContent =
+        "ANALYZING";
+
+    analyzing.textContent =
+        "Analyzing demo data...";
+
+    multiplier.innerHTML =
+        "--.-<span class='x'>x</span>";
+
+
+    let dots = 0;
+
+    const animation =
+        setInterval(()=>{
+
+            dots++;
+
+            if(dots > 3){
+                dots = 0;
+            }
+
+            analyzing.textContent =
+                "Analyzing demo data" +
+                ".".repeat(dots);
+
+        },350);
+
+
+    setTimeout(()=>{
+
+        clearInterval(animation);
+
+        const value =
+            generateDemoMultiplier();
+
+
+        multiplier.innerHTML =
+            value.toFixed(2) +
+            '<span class="x">x</span>';
+
+
+        multiplier.classList.remove("pop");
+
+        void multiplier.offsetWidth;
+
+        multiplier.classList.add("pop");
+
+
+        signalLevel.textContent =
+            getSignalLevel(value);
+
+        analyzing.textContent =
+            "Demo analysis complete";
+
+
+        signalCount++;
+
+
+        if(value >= 5){
+            highCount++;
+        }
+
+        if(value >= 2){
+            mediumCount++;
+        }
+
+
+        total.textContent =
+            signalCount;
+
+        high.textContent =
+            highCount;
+
+        medium.textContent =
+            mediumCount;
+
+
+        addHistory(value);
+
+
+        generate.disabled =
+            false;
+
+    },1800);
+}
+
+
+/* =====================================================
+   HISTORY
+===================================================== */
+
+function addHistory(value){
+
+    const item =
+        document.createElement("div");
+
+    item.className =
+        "history-item";
+
+
+    item.innerHTML = `
+        <strong>${value.toFixed(2)}x</strong>
+        <small>DEMO</small>
+    `;
+
+
+    historyList.prepend(item);
+
+
+    while(historyList.children.length > 4){
+
+        historyList.removeChild(
+            historyList.lastElementChild
+        );
+
+    }
+}
+
+
+generate.addEventListener(
+    "click",
+    generateSignal
+);
+
+</script>
+
+</body>
+</html>
